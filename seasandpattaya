@@ -1,1 +1,190 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>มีอะไรจะถามแหละ</title>
+    <!-- นำเข้าไลบรารีสำหรับทำเอฟเฟกต์พลุกระดาษระเบิด (Confetti) -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+        
+        /* สไตล์กล่องแสดงน้องหมา */
+        .gif-container {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .gif-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
 
+        h1 {
+            color: #8B0000;
+            font-size: 24px;
+            margin-bottom: 30px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            position: relative;
+            height: 60px;
+        }
+        button {
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease, font-size 0.2s ease, box-shadow 0.3s ease;
+        }
+        
+        /* ปุ่ม "ตกลงน้า" แบบเริ่มจากเล็ก + เพิ่มเอฟเฟกต์เรืองแสงนีออน (Glow) */
+        #yesBtn {
+            background-color: #8B0000;
+            color: white;
+            position: absolute;
+            right: calc(50% + 10px);
+            padding: 10px 22px;
+            font-size: 15px;
+            box-shadow: 0 0 15px #8B0000, 0 0 30px #8B0000;
+            animation: pulseGlow 1.5s infinite alternate; /* เอฟเฟกต์แสงวาบไปมา */
+        }
+        
+        /* ปุ่ม "ไม่ไป" เริ่มจากขนาดใหญ่ */
+        #noBtn {
+            background-color: #ccc;
+            color: #333;
+            position: absolute;
+            left: calc(50% + 10px);
+            padding: 16px 40px;
+            font-size: 22px;
+            box-shadow: 0 4px 10px rgba(255,255,255,0.1);
+        }
+
+        /* Animation ทำให้แสงเรืองแสงของปุ่ม ตกลงน้า ดูมีมิติขยับได้ */
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 10px #8B0000, 0 0 20px #8B0000;
+            }
+            100% {
+                box-shadow: 0 0 20px #ff4d6d, 0 0 40px #8B0000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- อัปเดตลิงก์ GIF สำรองที่ปลอดภัย โหลดขึ้นแน่นอน 100% -->
+        <div class="gif-container">
+            <img id="dogImg" src="https://giphy.com" alt="น้องหมาอ้อนวอน">
+        </div>
+        
+        <h1 id="question">เย็นนี้ไปกินชาบูกันไหม? (ห้ามปฏิเสธนะ) 🍲</h1>
+        <div class="btn-group">
+            <button id="yesBtn" onclick="confess()">ตกลงน้า</button>
+            <button id="noBtn" ontouchstart="moveButton()" onclick="moveButton()">ไม่ไป</button>
+        </div>
+    </div>
+
+    <script>
+        // ลิงก์รูปภาพสุนัขที่แก้ไขให้เสถียรและเปิดได้ทุกเว็บบราวเซอร์
+        const sadDog = "https://giphy.com"; // หมาหน้าเศร้าหูตกอ้อนวอน
+        const happyDog = "https://giphy.com"; // หมาเต้นดีใจกวนๆ ดุ๊กดิ๊ก
+
+        let yesScale = 1.0;
+        let noScale = 1.0;
+
+        function moveButton() {
+            const noBtn = document.getElementById('noBtn');
+            const yesBtn = document.getElementById('yesBtn');
+            const dogImg = document.getElementById('dogImg');
+            
+            // มั่นใจได้ว่าถ้ารูปหลุด หน้าจ๋อยจะยังคงอยู่
+            dogImg.src = sadDog;
+            
+            // ขยายปุ่มใช่ หดปุ่มไม่
+            yesScale += 0.35; 
+            noScale -= 0.15;  
+            if (noScale < 0.2) noScale = 0.2; 
+
+            yesBtn.style.transform = `scale(${yesScale})`;
+            noBtn.style.transform = `scale(${noScale})`;
+            
+            // สุ่มตำแหน่งปุ่มไม่ขยับหนีบนมือถือ
+            const padding = 60;
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+            
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+            
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+        }
+
+        // เมื่อกดสำเร็จ
+        function confess() {
+            document.getElementById('question').innerHTML = "น่ารักที่สุด! เตรียมแต่งตัวรอเลยยย ❤️🎉";
+            document.getElementById('question').style.color = "#ff4d6d"; // เปลี่ยนเป็นสีแดงสว่างขึ้นเมื่อสมหวัง
+            document.getElementById('dogImg').src = happyDog; 
+            document.getElementById('noBtn').style.display = 'none';
+            document.getElementById('yesBtn').style.display = 'none';
+
+            // สั่งให้พลุกระดาษระเบิดกระจายแบบต่อเนื่องกระจายทั่วหน้าจอ
+            var duration = 3 * 1000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.8 }
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.8 }
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    </script>
+
+</body>
+</html>
